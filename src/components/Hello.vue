@@ -5,7 +5,15 @@
         <div class="greeting">Hello {{name}}{{exclamationMarks}}</div>
         <button @click="decrement">-</button>
         <button @click="increment">+</button>
+        <table id="example-1">
+  <tr v-for="result in results">
+      <td v-for="cell in result">
+    {{ JSON.stringify(cell) }}
+    </td>
+  </tr>
+</table>
     </div>
+    
 </template>
 
 <script lang="ts">
