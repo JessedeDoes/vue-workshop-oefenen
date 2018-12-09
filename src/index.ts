@@ -11,7 +11,7 @@ let v = new Vue({
         <hello-component :name="name" :initialEnthusiasm="5" :initialResults="[]" />
     </div>
     `,
-    data: { name: "World" },
+    data: { name: "kikker" },
     components: {
         HelloComponent
     }

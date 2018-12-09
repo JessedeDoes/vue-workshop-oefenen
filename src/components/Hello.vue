@@ -23,13 +23,20 @@ import axios from "axios";
 
 const testje = function(x: string): string { return `http://localhost:8080/hercules/DSDD?query=select * from integratie.keywords where lemma='${x}' or keyword='${x}'` }
 const testje1 = function(x: string): string { return `http://localhost:8080/hercules/DSDD?query=select max(keywords.lemma) as lemma, 
+    string_agg(distinct keywords.dictionary, ',') as dict,
     max(keywords.keyword) as keyword, 
     max(keywords.definition) as definition, 
     string_agg(distinct location_area, ', ') as area,
+    string_agg(distinct location_subarea, ', ') as subarea,
+    string_agg(distinct provincie, ', ') as provincie,
+    string_agg(distinct streek, ', ') as streek,
     string_agg(distinct location_place, ', ') as place, 
-    string_agg(distinct kloeke_new,', ') as kloeke 
-from integratie.keywords keywords, integratie.union_table union_table where (keywords.keyword='${x}' or keywords.lemma='${x}') and   
- union_table.lemma_id=keywords.lemma_id and union_table.keyword=keywords.keyword_org group by keywords.lemma_id, keyword_id;
+    string_agg(distinct kloeke_new,', ') as kloeke,
+    string_agg(distinct lng %7C%7C ',' %7C%7C lat, '; ') 
+from integratie.keywords keywords, integratie.union_table union_table, integratie.kloeke_cumul coords 
+where (keywords.keyword='${x}' or keywords.lemma='${x}') and   
+ union_table.lemma_id=keywords.lemma_id and union_table.keyword=keywords.keyword_org and coords.kloeke_code1=union_table.kloeke_new 
+ group by keywords.lemma_id, keyword_id;
 `}
 
 export default Vue.extend({
