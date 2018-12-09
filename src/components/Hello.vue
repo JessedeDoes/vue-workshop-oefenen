@@ -60,7 +60,7 @@ export default Vue.extend({
              axios({ method: "GET", "url": testje1(this.name)}).then(result => {
                 this.results = result.data.results;
                 alert(JSON.stringify(this.results))
-                alert(this.allPoints)
+                alert(JSON.stringify(this.allPoints))
             }, error => {
                 console.error(error);
             });
@@ -79,7 +79,7 @@ export default Vue.extend({
                 else return []
         }, 
         allPoints(): Array<[string,string]> {
-           return this.results.flatMap(this.points).map(function (s: string) { var a = s.split(", "); return [a[0], a[1]] } )
+           return this.results.flatMap(this.points).map(function (s: string) { var a = s.split(","); return [a[0], a[1]] } )
         }
     }
 });
