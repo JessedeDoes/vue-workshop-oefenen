@@ -5,12 +5,13 @@
         <div class="greeting">Hello {{name}}{{exclamationMarks}}</div>
         <button @click="decrement">-</button>
         <button @click="increment">+</button>
-        <table id="example-1">
-  <tr v-for="result in results">
-      <td v-for="cell in result">
-    {{ JSON.stringify(cell) }}
-    </td>
-  </tr>
+        <table border="border" id="example-1">
+            <tr>
+                <td v-for="field in header"><b>{{field}}</b></td>
+            </tr>
+            <tr v-for="result in results">
+                <td v-for="cell in result">{{cell}}</td>
+        </tr>
 </table>
     </div>
     
@@ -20,7 +21,7 @@
 import Vue from "vue";
 import axios from "axios";
 
-const testje = "http://localhost:8080/hercules/DSDD?query=select * from integratie.lemmata where lemma='aarzelen'"
+const testje = function(x: string): string { return `http://localhost:8080/hercules/DSDD?query=select * from integratie.keywords where lemma='${x}' or keyword='${x}'` }
 
 export default Vue.extend({
     props: ['name', 'initialEnthusiasm', 'initialResults'],
@@ -40,7 +41,7 @@ export default Vue.extend({
         },
         getData()
         {
-             axios({ method: "GET", "url": testje}).then(result => {
+             axios({ method: "GET", "url": testje(this.name)}).then(result => {
                 this.results = result.data.results;
                 alert(JSON.stringify(this.results))
             }, error => {
@@ -51,7 +52,12 @@ export default Vue.extend({
     computed: {
         exclamationMarks(): string {
             return Array(this.enthusiasm + 1).join('!');
-        }
+        },
+        header(): Array<string> {
+            if (this.results.length > 0)
+                return  Object.keys(this.results[0]);
+                else return []
+        } 
     }
 });
 </script>
