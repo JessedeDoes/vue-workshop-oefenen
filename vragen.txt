@@ -1,1 +1,3 @@
-CSS wordt niet gepakt, iets in webpack.config.js aanpassen?
+* Makkelijkste manier om een projectje op te starten (nu veel handmatig gedoe)
+* CSS wordt niet gepakt, iets in webpack.config.js aanpassen?
+* componentjes maken die je makkelijk kan delen met niet-vue-applicaties

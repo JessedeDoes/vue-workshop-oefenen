@@ -22,6 +22,14 @@ import Vue from "vue";
 import axios from "axios";
 
 const testje = function(x: string): string { return `http://localhost:8080/hercules/DSDD?query=select * from integratie.keywords where lemma='${x}' or keyword='${x}'` }
+const testje1 = function(x: string): string { return `http://localhost:8080/hercules/DSDD?query=select max(keywords.lemma) as lem, 
+    max(keywords.keyword) as kw, 
+    max(keywords.definition) as def, 
+    string_agg(distinct location_place, ',') as loc, 
+    string_agg(distinct kloeke_new,',') as kloek 
+from integratie.keywords keywords, integratie.union_table union_table where (keywords.keyword='${x}' or keywords.lemma='${x}') and   
+ union_table.lemma_id=keywords.lemma_id and union_table.keyword=keywords.keyword_org group by keywords.lemma_id, keyword_id;
+`}
 
 export default Vue.extend({
     props: ['name', 'initialEnthusiasm', 'initialResults'],
@@ -41,7 +49,7 @@ export default Vue.extend({
         },
         getData()
         {
-             axios({ method: "GET", "url": testje(this.name)}).then(result => {
+             axios({ method: "GET", "url": testje1(this.name)}).then(result => {
                 this.results = result.data.results;
                 alert(JSON.stringify(this.results))
             }, error => {
