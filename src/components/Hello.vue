@@ -32,7 +32,7 @@ const testje1 = function(x: string): string { return `http://localhost:8080/herc
     string_agg(distinct streek, ', ') as streek,
     string_agg(distinct location_place, ', ') as place, 
     string_agg(distinct kloeke_new,', ') as kloeke,
-    string_agg(distinct lng %7C%7C ',' %7C%7C lat, '; ') 
+    string_agg(distinct lng %7C%7C ',' %7C%7C lat, '; ') as points
 from integratie.keywords keywords, integratie.union_table union_table, integratie.kloeke_cumul coords 
 where (keywords.keyword='${x}' or keywords.lemma='${x}') and   
  union_table.lemma_id=keywords.lemma_id and union_table.keyword=keywords.keyword_org and coords.kloeke_code1=union_table.kloeke_new 
@@ -60,9 +60,13 @@ export default Vue.extend({
              axios({ method: "GET", "url": testje1(this.name)}).then(result => {
                 this.results = result.data.results;
                 alert(JSON.stringify(this.results))
+                alert(this.allPoints)
             }, error => {
                 console.error(error);
             });
+        },
+        points(r: Object):Array<string> {
+            return r[points].split("; ")
         }
     },
     computed: {
@@ -73,7 +77,10 @@ export default Vue.extend({
             if (this.results.length > 0)
                 return  Object.keys(this.results[0]);
                 else return []
-        } 
+        }, 
+        allPoints(): Array<string> {
+           return this.results.flatMap(this.points)
+        }
     }
 });
 </script>
