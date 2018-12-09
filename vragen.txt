@@ -2,3 +2,4 @@
 * CSS wordt niet gepakt, iets in webpack.config.js aanpassen?
 * componentjes maken die je makkelijk kan delen met niet-vue-applicaties
 * debuggen zonder "npm run build" te hoeven roepen
+* krachtige collection api voor ts (a la immutable.js)
