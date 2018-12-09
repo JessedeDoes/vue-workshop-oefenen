@@ -28,11 +28,13 @@ export default Vue.extend({
             if (this.enthusiasm > 1) {
                 this.enthusiasm--;
             }
+            this.getData()
         },
         getData()
         {
              axios({ method: "GET", "url": testje}).then(result => {
                 this.results = result.data.results;
+                alert(JSON.stringify(this.results))
             }, error => {
                 console.error(error);
             });
@@ -46,8 +48,4 @@ export default Vue.extend({
 });
 </script>
 
-<style>
-.greeting {
-    font-size: 20px;
-}
-</style>
+
