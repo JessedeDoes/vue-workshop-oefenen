@@ -10,7 +10,7 @@
                 <td v-for="field in header"><b>{{field}}</b></td>
             </tr>
             <tr v-for="result in results">
-                <td v-for="cell in result">{{cell}}</td>
+                <td v-for="f in Object.keys(result)"><span :class="f"> {{result[f]}}</span></td>
         </tr>
 </table>
     </div>
