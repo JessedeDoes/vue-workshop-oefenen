@@ -1,6 +1,7 @@
 var path = require('path')
 var webpack = require('webpack')
 const VueLoaderPlugin = require('vue-loader/lib/plugin')
+//const VueStyleLoaderPlugin = require('vue-style-loader/lib/plugin')
 
 module.exports = {
   entry: './src/index.ts',
@@ -57,7 +58,8 @@ module.exports = {
   },
   plugins: [
     // make sure to include the plugin!
-    new VueLoaderPlugin()
+    new VueLoaderPlugin(),
+ //   new VueStyleLoaderPlugin()
   ],
   devtool: '#eval-source-map'
 }
