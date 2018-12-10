@@ -5,6 +5,8 @@
         <div class="greeting">Hello {{name}}{{exclamationMarks}}</div>
         <button @click="decrement">-</button>
         <button @click="increment">+</button>
+        <div>{{JSON.stringify(this.bounds)}} {{JSON.stringify(this.center)}}</div>
+        <div>{{JSON.stringify(classes)}}</div>
         <div id="kaartje" style="with:100%; height: 1000px"></div>
         
         <table border="border" id="example-1">
@@ -12,6 +14,7 @@
                 <td v-for="field in header"><b>{{field}}</b></td>
             </tr>
             <tr v-for="result in results">
+                <td><input v-model="findItem(result['keyword']).valz"></td>
                 <td v-for="f in Object.keys(result)"><span :class="f"> {{result[f]}}</span></td>
         </tr>
     </table>
@@ -24,30 +27,19 @@
 import Vue from "vue";
 import axios from "axios";
 import * as L from "leaflet";
-//import 'ol/ol.css';
 
-import VueLayers from 'vuelayers'
-//import 'vuelayers/lib/style.css' // needs css-loader
+class P {
+    keyz: string;
+    valz: string;
 
-Vue.use(VueLayers)
-
-// or individual components
-
-// kijk ook eens naar: https://gist.github.com/bertt/4956504
-
-import { Map, TileLayer, OsmSource, Geoloc} from 'vuelayers'
-//import 'vuelayers/lib/style.css' // needs css-loader
-//Vue.use(XYZSource)
-//Vue.use(View)
-Vue.use(Map)
-Vue.use(TileLayer)
-Vue.use(OsmSource)
-Vue.use(Geoloc)
-
-//import Map f,rom 'ol/Map';
-//import View from 'ol/View';
-//import TileLayer from 'ol/layer/Tile';
-//import XYZSource from 'ol/source/XYZ';
+constructor(a: string, b: string) {
+        this.keyz = a;
+        this.valz = b;
+    }
+    setValue(x: string) {
+        this.valz = x;
+    }
+};
 
 const testje = function(x: string): string { return `http://localhost:8080/hercules/DSDD?query=select * from integratie.keywords where lemma='${x}' or keyword='${x}'` }
 const testje1 = function(x: string): string { return `http://localhost:8080/hercules/DSDD?query=select max(keywords.lemma) as lemma, 
@@ -82,7 +74,10 @@ export default Vue.extend({
     data() {
         return {
             enthusiasm: this.initialEnthusiasm,
-            results: this.initialResults
+            results: this.initialResults,
+            hasMap: false,
+            initialMap: new Array<L.Map>(),
+            markers: {}
         }
     },
     methods: {
@@ -97,16 +92,24 @@ export default Vue.extend({
         {
              axios({ method: "GET", "url": testje1(this.name)}).then(result => {
                 this.results = result.data.results;
-                alert(JSON.stringify(this.results))
-                alert(JSON.stringify([this.ulx, this.uly, this.lrx, this.lry]))
-                alert(this.kaartje)
+                //alert(JSON.stringify(this.results))
+                //alert(JSON.stringify([this.ulx, this.uly, this.lrx, this.lry]))
+                this.kaartje
             }, error => {
                 console.error(error);
             });
         },
-        points(r: any):Array<string> {
-            return r['points'].split("; ")
-        }
+        points(r: any):Array<[string,string]> {
+            return r['points'].split("; ").map((s:string) => [s,r['keyword']])
+        },
+        clearMap(map: L.Map): number 
+        {
+            map.eachLayer(l => {   l.remove } )
+            
+    
+            return 1;
+        },
+        findItem(s: string): P { return this.classes.filter((x:P) => x.keyz==s)[0] || new P('aap', 'noot')}
     },
     computed: {
         exclamationMarks(): string {
@@ -117,13 +120,27 @@ export default Vue.extend({
                 return  Object.keys(this.results[0]);
                 else return []
         }, 
-        allPoints(): Array<[number,number]> {
-           return this.results.flatMap(this.points).map(function (s: string) { var a = s.split(","); return [Number(a[0]), Number(a[1])] } )
+        classes(): Array<P> {
+            var a = this.results.map((r:any) => { return new P(r['keyword'],"")})
+            return a;
         },
-        ulx():number { var iksen:Array<number> = this.allPoints.map((x: [number,number]) => x[0]); return min(iksen) },
-        lrx(): number { var iksen:Array<number> = this.allPoints.map((x: [number,number]) => x[0]); return max(iksen) },
-        uly(): number { var yen:Array<number> = this.allPoints.map((x: [number,number]) => x[1]); return min(yen) },
-        lry(): number { var yen:Array<number> = this.allPoints.map((x: [number,number]) => x[1]); return max(yen) },
+        allPoints(): Array<[number,number, string]> {
+            //alert(this.results.size)
+           if (this.results.length> 0) return this.results.flatMap(this.points).map(function (s: [string,string]) { var a = s[0].split(","); return [Number(a[0]), Number(a[1]), s[1]] } )
+           else return [[0,0,'bla'],[1,1,'boe']]
+        },
+
+        //allPointsLongLat(): Array<L.LatLng> = { var points = this.allPoints.map( (p: [number,number]) => L.LatLng(p[1],p[0]) ); return points},
+        maxLong(): number { var iksen:Array<number> = this.allPoints.map((x: [number,number,string]) => x[0]); return max(iksen) },
+        minLong(): number { var iksen:Array<number> = this.allPoints.map((x: [number,number,string]) => x[0]); return min(iksen) },
+        maxLat(): number { var yen:Array<number> = this.allPoints.map((x: [number,number,string]) => x[1]); return max(yen) },
+        minLat(): number { var yen:Array<number> = this.allPoints.map((x: [number,number,string]) => x[1]); return min(yen) },
+        southWest(): L.LatLng { return L.latLng(this.minLat, this.minLong)},
+        northEast(): L.LatLng { return L.latLng(this.maxLat, this.maxLong)},
+        center():L.LatLng  { return L.latLng((this.minLat + this.maxLat)/2, (this.minLong + this.maxLong)/2)},
+        bounds():L.LatLngBounds { return L.latLngBounds(this.southWest, this.northEast)},
+    
+        //boundingRectangle(): L.Rectangle { return  L.rectangle(this.bounds, {color: "red", weight: 1}) },
         kaartje(): L.Map {
             //var map = new L.Map("kaartje");
 //map.setView(new L.LatLng(51.505, -0.09), 13);
@@ -131,16 +148,55 @@ export default Vue.extend({
 //layer.addTo(map);
             //return map;
             	// set up the map
-	var map = new L.Map('kaartje');
+    var map:L.Map; //= new L.Map('kaartje');
+
+    if(this.hasMap)
+    {
+        map = this.initialMap[0]
+    } else
+    {
+       map = new L.Map('kaartje')
+       this.hasMap = true;
+       this.initialMap.push(map)
+    }
 
 	// create the tile layer with correct attribution
 	var osmUrl='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 	var osmAttrib='Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors';
 	var osm = new L.TileLayer(osmUrl, {minZoom: 8, maxZoom: 12, attribution: osmAttrib});		
-
+    //var centerx = (this.ulx + this.lrx)/2
+    //var centery = (this.uly + this.lry)/ 2
 	// start the map in South-East England
-	map.setView(new L.LatLng(51.3, 0.7),9);
+    // map.setView(new L.LatLng(centery, centerx),5);
+    //var southWest = L.latLng(this.minLat, this.minLong)
+    //var northEast = L.latLng(this.maxLat, this.maxLong)
+    //var center = L.latLng((this.minLat + this.maxLat)/2, (this.minLong + this.maxLong)/2)
+    //var bounds = L.latLngBounds(southWest, northEast)
+    
+    //alert(JSON.stringify(bounds))
+    
+    //map.remove()
+    //map = new L.Map('kaartje')
+    // this.clearMap(map)
+    map.setMaxBounds(this.bounds)
+    map.setView(this.center, 3)
+    
+        
     map.addLayer(osm);
+
+
+    // add rectangle passing bounds and some basic styles
+    L.rectangle(this.bounds, {color: "red", weight: 1}).addTo(map);
+    if (this.allPoints.length < 1000)
+    {
+       this.allPoints.forEach(p => {
+           var p1 = new L.LatLng(p[1],p[0])
+           // console.log(JSON.stringify(p1))
+           var marker = L.marker(p1)//.addTo(mymap);
+           marker.bindPopup(p[2]).openPopup();
+           marker.addTo(map)
+       })
+    }
     return map;
         }
         //bbox(): Array<[number, number]> = { return [[.1,.2]]}
