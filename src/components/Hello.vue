@@ -39,6 +39,16 @@ where (keywords.keyword='${x}' or keywords.lemma='${x}') and
  group by keywords.lemma_id, keyword_id;
 `}
 
+const max = function(x: Array<number>): number {
+   var maxie = x.reduce(function(a, b) {return Math.max(a, b);});
+  return maxie;
+}
+
+const min = function(x: Array<number>): number {
+   var minnie = x.reduce(function(a, b) {return Math.min(a, b);});
+  return minnie;
+}
+
 export default Vue.extend({
     props: ['name', 'initialEnthusiasm', 'initialResults'],
     data() {
@@ -60,7 +70,7 @@ export default Vue.extend({
              axios({ method: "GET", "url": testje1(this.name)}).then(result => {
                 this.results = result.data.results;
                 alert(JSON.stringify(this.results))
-                alert(JSON.stringify(this.allPoints))
+                alert(JSON.stringify([this.ulx, this.uly, this.lrx, this.lry]))
             }, error => {
                 console.error(error);
             });
@@ -78,9 +88,15 @@ export default Vue.extend({
                 return  Object.keys(this.results[0]);
                 else return []
         }, 
-        allPoints(): Array<[string,string]> {
-           return this.results.flatMap(this.points).map(function (s: string) { var a = s.split(","); return [a[0], a[1]] } )
-        }
+        allPoints(): Array<[number,number]> {
+           return this.results.flatMap(this.points).map(function (s: string) { var a = s.split(","); return [Number(a[0]), Number(a[1])] } )
+        },
+        ulx():number { var iksen:Array<number> = this.allPoints.map((x: [number,number]) => x[0]); return min(iksen) },
+        lrx(): number { var iksen:Array<number> = this.allPoints.map((x: [number,number]) => x[0]); return max(iksen) },
+        uly(): number { var yen:Array<number> = this.allPoints.map((x: [number,number]) => x[1]); return min(yen) },
+        lry(): number { var yen:Array<number> = this.allPoints.map((x: [number,number]) => x[1]); return max(yen) },
+        //bbox(): Array<[number, number]> = { return [[.1,.2]]}
+        //bbox(): ((number,number), (number,number)) =  { return ((this.ulx, this.uly), (this.lrx, this.lry)) }
     }
 });
 </script>
