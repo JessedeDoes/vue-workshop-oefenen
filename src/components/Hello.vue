@@ -11,10 +11,11 @@
         
         <table border="border" id="example-1">
             <tr>
+                <td></td>
                 <td v-for="field in header"><b>{{field}}</b></td>
             </tr>
             <tr v-for="result in results">
-                <td><input v-model="findItem(result['keyword']).valz"></td>
+                <td><input v-model="findItem(result['keyword']).valz" @change="x => kwClassHandler(result['keyword'],x)"></td>
                 <td v-for="f in Object.keys(result)"><span :class="f"> {{result[f]}}</span></td>
         </tr>
     </table>
@@ -109,7 +110,9 @@ export default Vue.extend({
     
             return 1;
         },
-        findItem(s: string): P { return this.classes.filter((x:P) => x.keyz==s)[0] || new P('aap', 'noot')}
+        findItem(s: string): P { return this.classes.filter((x:P) => x.keyz==s)[0] || new P('aap', 'noot')},
+
+        kwClassHandler(s: string, t: Event): void { alert(s + ":" + (t.target as any).value) }
     },
     computed: {
         exclamationMarks(): string {
