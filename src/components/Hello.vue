@@ -251,7 +251,7 @@ export default Vue.extend({
     sampleOfAllpoints(): Array<[number, number, string]> {
       var copy = this.allPoints.map((x: [number, number, string]) => x);
       this.shuffleArray(copy);
-      return copy.slice(0, Math.min(20, copy.length));
+      return copy.slice(0, Math.min(100, copy.length));
     },
     maxLong(): number {
       var iksen: Array<number> = this.allPoints.map(
@@ -326,11 +326,44 @@ export default Vue.extend({
     },
 
     kaartje(): L.Map {
+      
+      /*
+      type test = {
+          type: 'test',
+          testvar: number
+      }|{
+          type: 'other',
+          othertestvar: string
+      }
+
+        function isString(v : any): v is string {
+            return typeof v === 'string'
+        }
+
+
+      let a = {} as test;
+        if (isString(a)) {
+            a.
+        }
+    if (a.type === 'test') {
+        a.
+    } else {
+        a.
+    }
+     */ 
+      
       // set up the map
       var map: L.Map;
 
       if (this.hasMap) {
         map = this.initialMap[0];
+        map.remove();
+        (document.getElementById('kaartje')!).setAttribute('class',"")
+
+
+        map = new L.Map("kaartje");
+        this.hasMap = true;
+        this.initialMap[0] = map;
       } else {
         map = new L.Map("kaartje");
         this.hasMap = true;
@@ -347,6 +380,7 @@ export default Vue.extend({
         attribution: osmAttrib
       });
 
+
       map.setMaxBounds(this.bounds);
       map.setView(this.center, 9);
 
@@ -354,13 +388,19 @@ export default Vue.extend({
 
       // add rectangle passing bounds and some basic styles
       L.rectangle(this.bounds, { color: "red", weight: 1 }).addTo(map);
+      
+      var markerGroup: Array<L.Marker> = []  
 
       this.sampleOfAllpoints.forEach(p => {
         var p1 = new L.LatLng(p[1], p[0])
         var marker = L.marker(p1, {icon: this.iconMap[p[2]]})
         marker.bindPopup(p[2]).openPopup()
+        markerGroup.push(marker)
         marker.addTo(map)
       });
+      
+      var layer = new L.LayerGroup(markerGroup)
+      
 
       return map;
     }
