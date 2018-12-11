@@ -3,3 +3,5 @@
 * componentjes maken die je makkelijk kan delen met niet-vue-applicaties
 * debuggen zonder "npm run build" te hoeven roepen
 * krachtige collection api voor ts (a la immutable.js)
+* state changes triggeren
+* v-model uit associatieve array, kan dat?

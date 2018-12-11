@@ -78,7 +78,7 @@ export default Vue.extend({
             results: this.initialResults,
             hasMap: false,
             initialMap: new Array<L.Map>(),
-            markers: {}
+            markerClasses: {}
         }
     },
     methods: {
@@ -114,8 +114,9 @@ export default Vue.extend({
 
         kwClassHandler(s: string, t: Event): void {
             var newVal =  (t.target as any).value
-            alert(s + ":" + newVal ) 
-            this.findItem(s).valz = newVal 
+            //alert(s + ":" + newVal ) 
+            this.findItem(s).valz = newVal
+            Vue.set(this.markerClasses, s, newVal) 
             }
     },
     computed: {
