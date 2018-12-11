@@ -5,3 +5,4 @@
 * krachtige collection api voor ts (a la immutable.js)
 * state changes triggeren
 * v-model uit associatieve array, kan dat?
+* set webpack to ES6
