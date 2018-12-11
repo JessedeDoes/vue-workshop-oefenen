@@ -85,7 +85,7 @@ createIcon()
 import Vue from "vue"
 import axios from "axios"
 import * as L from "leaflet"
-
+import EditGrouping from "./EditGrouping.vue"
 class P {
   keyz: string;
   valz: string;
@@ -151,6 +151,9 @@ export default Vue.extend({
       initialMap: new Array<L.Map>(),
       markerClasses: {}
     };
+  },
+  components: {
+     EditGrouping
   },
   methods: {
   
