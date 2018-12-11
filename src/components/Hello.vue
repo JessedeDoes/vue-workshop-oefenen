@@ -44,10 +44,12 @@ The solution I came up with was to use Leaflet.DivIcon html attribute, it allows
 
 So for example I created a marker style follows:
 
+
 const myCustomColour = '#583470'
 
-const markerHtmlStyles = `
-  background-color: ${myCustomColour};
+createIconWithColour(colour: string): L.DivIcon
+{ const markerHtmlStyles = `
+  background-color: ${colour};
   width: 3rem;
   height: 3rem;
   display: block;
@@ -58,13 +60,15 @@ const markerHtmlStyles = `
   transform: rotate(45deg);
   border: 1px solid #FFFFFF`
 
-const icon = Leaflet.divIcon({
-  className: "my-custom-pin",
-  iconAnchor: [0, 24],
-  labelAnchor: [-6, 0],
-  popupAnchor: [0, -36],
-  html: `<span style="${markerHtmlStyles}" />`
-})
+  const icon = L.DivIcon({
+    className: "my-custom-pin",
+    iconAnchor: [0, 24],
+    labelAnchor: [-6, 0],
+    popupAnchor: [0, -36],
+   html: `<span style="${markerHtmlStyles}" />`
+
+   return icon
+ })
 
 newMarker = L.marker(lat, long], {
   icon: myIcon
@@ -153,6 +157,7 @@ export default Vue.extend({
       axios({ method: "GET", url: testje1(this.name) }).then(
         result => {
           this.results = result.data.results;
+          //this.shuffleArray(this.results); // is dit niet dom??
           //alert(JSON.stringify(this.results))
           //alert(JSON.stringify([this.ulx, this.uly, this.lrx, this.lry]))
           this.kaartje;
@@ -183,16 +188,48 @@ export default Vue.extend({
       //alert(s + ":" + newVal )
       //this.findItem(s).valz = newVal;
       Vue.set(this.markerClasses, s, newVal);
-    }
+    },
+    shuffleArray(array: Array<any>): void {
+      for (var i = array.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
+      }
+    },
+    createIconWithColour(colour: string): L.DivIcon { 
+        const markerStyle = `
+  background-color: ${colour};
+  width: 1rem;
+  height: 1rem;
+  display: block;
+  left: -1.5rem;
+  top: -1.5rem;
+  position: relative;
+  border-radius: 1rem 1rem 0;
+  transform: rotate(45deg);
+  border: 1px solid #FFFFFF`
+
+    const icon:L.DivIcon = new L.DivIcon({
+    className: "my-custom-pin",
+    iconAnchor: [0, 24],
+    // labelAnchor: [-6, 0],
+    popupAnchor: [0, -36],
+    html: `<span style="${markerStyle}" />`})
+
+    return icon
+    },
   },
   computed: {
     exclamationMarks(): string {
       return Array(this.enthusiasm + 1).join("!");
     },
+
     header(): Array<string> {
       if (this.results.length > 0) return Object.keys(this.results[0]);
       else return [];
     },
+
     classes(): Array<P> {
       var a = this.results.map((r: any) => {
         return new P(r["keyword"], "");
@@ -211,7 +248,11 @@ export default Vue.extend({
           });
       else return [[0, 0, "bla"], [1, 1, "boe"]];
     },
-
+    sampleOfAllpoints(): Array<[number, number, string]> {
+      var copy = this.allPoints.map((x: [number, number, string]) => x);
+      this.shuffleArray(copy);
+      return copy.slice(0, Math.min(20, copy.length));
+    },
     maxLong(): number {
       var iksen: Array<number> = this.allPoints.map(
         (x: [number, number, string]) => x[0]
@@ -253,25 +294,35 @@ export default Vue.extend({
       return L.latLngBounds(this.southWest, this.northEast);
     },
 
-    distinctKeywordClasses(): any {
-      var s:any = {};
+    distinctKeywordClasses(): Array<string> {
+      var s: any = {};
       this.results.forEach((r: any) => {
-         var kw = r['keyword']
-         if (kw in this.markerClasses)
-         {
-           var c: string = (this.markerClasses as any)[kw] as string // Huh? Hoe kan dit netter???
-           s[c] = 1;
-         }
-           else
-           s[kw] = 1
-      })
-      return s;
+        var kw = r['keyword'];
+        if (kw in this.markerClasses) {
+          var c: string = (this.markerClasses as any)[kw] as string; // Huh? Hoe kan dit netter???
+          s[c] = 1;
+        } else s[kw] = 1;
+      });
+      return Object.keys(s);
     },
 
-    iconMap()
-    {
-        var s = this.distinctKeywordClasses
+    iconMap(): { [key:string]: L.DivIcon}  {
+      var s = this.distinctKeywordClasses;
+      console.log(JSON.stringify(s))
+      var l = s.length
+      var increment = 255 / l
+      var colorMap: { [key:string]: L.DivIcon} = {}
+      var b = 0
 
+      for (var i=0; i < l; i++)
+      {
+          var colour = `hsl(${b},75%,75%)`
+          console.log(colour)
+          colorMap[s[i]] = this.createIconWithColour(colour)
+          b = Math.floor(b+increment)
+      }
+    
+      return colorMap
     },
 
     kaartje(): L.Map {
@@ -297,21 +348,20 @@ export default Vue.extend({
       });
 
       map.setMaxBounds(this.bounds);
-      map.setView(this.center, 3);
+      map.setView(this.center, 9);
 
       map.addLayer(osm);
 
       // add rectangle passing bounds and some basic styles
       L.rectangle(this.bounds, { color: "red", weight: 1 }).addTo(map);
-      if (this.allPoints.length < 1000) {
-        this.allPoints.forEach(p => {
-          var p1 = new L.LatLng(p[1], p[0]);
 
-          var marker = L.marker(p1);
-          marker.bindPopup(p[2]).openPopup();
-          marker.addTo(map);
-        });
-      }
+      this.sampleOfAllpoints.forEach(p => {
+        var p1 = new L.LatLng(p[1], p[0])
+        var marker = L.marker(p1, {icon: this.iconMap[p[2]]})
+        marker.bindPopup(p[2]).openPopup()
+        marker.addTo(map)
+      });
+
       return map;
     }
   }
