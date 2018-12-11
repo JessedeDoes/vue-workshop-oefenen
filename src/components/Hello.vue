@@ -15,7 +15,7 @@
                 <td v-for="field in header"><b>{{field}}</b></td>
             </tr>
             <tr v-for="result in results">
-                <td><input v-model="findItem(result['keyword']).valz" @change="x => kwClassHandler(result['keyword'],x)"></td>
+                <td><input type="text" v-model="findItem(result['keyword']).valz" @change="x => kwClassHandler(result['keyword'],x)"></td>
                 <td v-for="f in Object.keys(result)"><span :class="f"> {{result[f]}}</span></td>
         </tr>
     </table>
@@ -112,7 +112,11 @@ export default Vue.extend({
         },
         findItem(s: string): P { return this.classes.filter((x:P) => x.keyz==s)[0] || new P('aap', 'noot')},
 
-        kwClassHandler(s: string, t: Event): void { alert(s + ":" + (t.target as any).value) }
+        kwClassHandler(s: string, t: Event): void {
+            var newVal =  (t.target as any).value
+            alert(s + ":" + newVal ) 
+            this.findItem(s).valz = newVal 
+            }
     },
     computed: {
         exclamationMarks(): string {
