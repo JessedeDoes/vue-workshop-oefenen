@@ -3,9 +3,11 @@
 <template>
   <div>
     <div class="greeting">Hello {{name}}{{exclamationMarks}}</div>
-    <button @click="decrement">-</button>
-    <button @click="increment">+</button>
+    <button @click="search">Zoek</button>
+ 
+
     <div>{{JSON.stringify(this.bounds)}} {{JSON.stringify(this.center)}}</div>
+ 
     <div><h3>Keywords:</h3>{{JSON.stringify(this.distinctKeywords)}}</div>
     <div><h3>Keyword classes:</h3>{{JSON.stringify(this.distinctKeywordClasses)}}</div>
     <div id="kaartje" style="with:100%; height: 1000px"></div>
@@ -80,9 +82,9 @@ createIcon()
 -->
 
 <script lang="ts">
-import Vue from "vue";
-import axios from "axios";
-import * as L from "leaflet";
+import Vue from "vue"
+import axios from "axios"
+import * as L from "leaflet"
 
 class P {
   keyz: string;
@@ -119,6 +121,12 @@ where (keywords.keyword='${x}' or keywords.lemma='${x}') and
 `;
 };
 
+const completer = function(x: string): string {
+  return ` (select 'l:' || lemma from lemmata where lemma ~* '^${x}' order by lemma limit 10) union (select keyword from keywords where keyword ~* '^${x}' 
+  order by keyword limit 10);
+`  
+}
+
 const max = function(x: Array<number>): number {
   var maxie = x.reduce(function(a, b) {
     return Math.max(a, b);
@@ -145,13 +153,8 @@ export default Vue.extend({
     };
   },
   methods: {
-    increment() {
-      this.enthusiasm++;
-    },
-    decrement() {
-      if (this.enthusiasm > 1) {
-        this.enthusiasm--;
-      }
+  
+    search() {
       this.getData();
     },
     getData() {
@@ -211,8 +214,8 @@ export default Vue.extend({
   width: 1rem;
   height: 1rem;
   display: block;
-  left: -1.5rem;
-  top: -1.5rem;
+  left: 0rem;
+  top: 0rem;
   position: relative;
   border-radius: 1rem 1rem 0;
   transform: rotate(45deg);
