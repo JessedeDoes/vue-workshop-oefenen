@@ -4,10 +4,14 @@
   <div>
     <div class="greeting">Hello {{name}}{{exclamationMarks}}</div>
     <button @click="search">Zoek</button>
- 
+    <button @click="showGroupEditor=!showGroupEditor">Toggle group editor</button>
 
     <div>{{JSON.stringify(this.bounds)}} {{JSON.stringify(this.center)}}</div>
  
+     <div :style="{display : (this.showGroupEditor)? 'block' : 'none'}">
+    <EditGrouping :terms="this.distinctKeywords"/>
+    </div>
+
     <div><h3>Keywords:</h3>{{JSON.stringify(this.distinctKeywords)}}</div>
     <div><h3>Keyword classes:</h3>{{JSON.stringify(this.distinctKeywordClasses)}}</div>
     <div id="kaartje" style="with:100%; height: 1000px"></div>
@@ -25,8 +29,7 @@
             type="text"
             x-v-model="findItem(result['keyword']).valz"
             v-model="markerClasses[result['keyword']]"
-            @change="x => kwClassHandler(result['keyword'],x)"
-          >
+            x-change="x => kwClassHandler(result['keyword'],x)">
         </td>
         <td v-bind:key="f" v-for="f in Object.keys(result)">
           <span :class="f">{{result[f]}}</span>
@@ -149,7 +152,8 @@ export default Vue.extend({
       results: this.initialResults,
       hasMap: false,
       initialMap: new Array<L.Map>(),
-      markerClasses: {}
+      markerClasses: {},
+      showGroupEditor: false
     };
   },
   components: {
@@ -184,12 +188,13 @@ export default Vue.extend({
 
       return 1;
     },
+    /*
     findItem(s: string): P {
       return (
         this.classes.filter((x: P) => x.keyz == s)[0] || new P("aap", "noot")
       );
     },
-
+    */
     kwClassHandler(s: string, t: Event): void {
       var newVal = (t.target as any).value;
       //alert(s + ":" + newVal )
@@ -325,16 +330,18 @@ export default Vue.extend({
 
     iconMap(): { [key:string]: L.DivIcon}  {
       var s = this.distinctKeywordClasses;
-      console.log(JSON.stringify(s))
+      //console.log(JSON.stringify(s))
       var l = s.length
-      var increment = 255 / l
+      
+      var increment = Math.max(255 / l,1)
+
       var colorMap: { [key:string]: L.DivIcon} = {}
       var b = 0
 
       for (var i=0; i < l; i++)
       {
           var colour = `hsl(${b},75%,75%)`
-          console.log(colour)
+          //console.log(colour)
           colorMap[s[i]] = this.createIconWithColour(colour)
           b = Math.floor(b+increment)
       }
@@ -343,31 +350,7 @@ export default Vue.extend({
     },
 
     kaartje(): L.Map {
-      
-      /*
-      type test = {
-          type: 'test',
-          testvar: number
-      }|{
-          type: 'other',
-          othertestvar: string
-      }
-
-        function isString(v : any): v is string {
-            return typeof v === 'string'
-        }
-
-
-      let a = {} as test;
-        if (isString(a)) {
-            a.
-        }
-    if (a.type === 'test') {
-        a.
-    } else {
-        a.
-    }
-     */ 
+       
       
       // set up the map
       var map: L.Map;
