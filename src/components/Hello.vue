@@ -6,7 +6,8 @@
     <button @click="decrement">-</button>
     <button @click="increment">+</button>
     <div>{{JSON.stringify(this.bounds)}} {{JSON.stringify(this.center)}}</div>
-    <div>{{JSON.stringify(markerClasses)}}</div>
+    <div><h3>Keywords:</h3>{{JSON.stringify(this.distinctKeywords)}}</div>
+    <div><h3>Keyword classes:</h3>{{JSON.stringify(this.distinctKeywordClasses)}}</div>
     <div id="kaartje" style="with:100%; height: 1000px"></div>
 
     <table border="border" id="example-1">
@@ -189,6 +190,13 @@ export default Vue.extend({
       //this.findItem(s).valz = newVal;
       Vue.set(this.markerClasses, s, newVal);
     },
+    
+    distinctly(a: Array<string>): Array<string> {
+      let s: any = {}
+      a.forEach(x => s[x] = 1)
+      return Object.keys(s);
+    },
+
     shuffleArray(array: Array<any>): void {
       for (var i = array.length - 1; i > 0; i--) {
         var j = Math.floor(Math.random() * (i + 1));
@@ -251,7 +259,7 @@ export default Vue.extend({
     sampleOfAllpoints(): Array<[number, number, string]> {
       var copy = this.allPoints.map((x: [number, number, string]) => x);
       this.shuffleArray(copy);
-      return copy.slice(0, Math.min(100, copy.length));
+      return copy.slice(0, Math.min(300, copy.length));
     },
     maxLong(): number {
       var iksen: Array<number> = this.allPoints.map(
@@ -292,6 +300,9 @@ export default Vue.extend({
     },
     bounds(): L.LatLngBounds {
       return L.latLngBounds(this.southWest, this.northEast);
+    },
+    distinctKeywords() : Array<string>  {
+        return this.distinctly(this.results.map( (r: any) => r['keyword']))
     },
 
     distinctKeywordClasses(): Array<string> {
